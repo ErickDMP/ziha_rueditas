@@ -1,0 +1,10 @@
+Package: ziha-rueditas
+Version: 0.2.0
+Section: utils
+Priority: optional
+Architecture: all
+Depends: bash, libglib2.0-bin, locales, keyboard-configuration, dconf-gsettings-backend
+Maintainer: Ziha Studio <contacto@ziha.es>
+Homepage: https://ziha.es
+Description: Configurador Ziha para Debian y Ubuntu
+ Incluye tres fondos de pantalla y opciones de idioma y teclado espanol.

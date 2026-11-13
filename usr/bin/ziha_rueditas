@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# Ziha Rueditas 0.2.0 - fondos, idioma y teclado
+# Ejecutar como usuario normal en la sesion grafica (sin sudo).
+
+FONDOS="/usr/share/backgrounds/ziha"
+
+pausa() {
+    echo
+    read -r -p "Pulsa Enter para continuar..." _ || exit 0
+}
+
+mostrar_menu() {
+    clear
+    echo "=================================="
+    echo "      ZIHA RUEDITAS 0.2.0"
+    echo "=================================="
+    echo "  1) Ziha - Retrato"
+    echo "  2) Ziha - Lluvia"
+    echo "  3) Ziha - Azotea"
+    echo "  4) Poner sistema en espanol (Espana)"
+    echo "  5) Poner teclado espanol (Espana)"
+    echo "  0) Salir"
+    echo "=================================="
+}
+
+aplicar_fondo() {
+    local ruta="$1" uri
+    if [ ! -f "$ruta" ]; then
+        echo "No se encontro la imagen: $ruta"
+        return 1
+    fi
+    if ! command -v gsettings >/dev/null 2>&1 || [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+        echo "Necesitas abrirlo desde una sesion grafica GNOME."
+        return 1
+    fi
+    uri="file://$ruta"
+    gsettings set org.gnome.desktop.background picture-uri "$uri" || return 1
+    if gsettings list-keys org.gnome.desktop.background | grep -qx 'picture-uri-dark'; then
+        gsettings set org.gnome.desktop.background picture-uri-dark "$uri" || return 1
+    fi
+    echo "Fondo aplicado: $(basename "$ruta")"
+}
+
+configurar_idioma() {
+    echo "Se configurara el idioma general del sistema en espanol de Espana (es_ES.UTF-8)."
+    echo "Esto requiere permisos de administrador y puede cambiar formatos de fecha y numeros."
+    read -r -p "Continuar? (s/N): " confirmar
+    [[ "$confirmar" =~ ^[sS]$ ]] || return 0
+
+    if [ ! -x /usr/sbin/locale-gen ] ; then
+        echo "Falta el paquete locales. Instalalo con: sudo apt install locales"
+        return 1
+    fi
+    # Descomenta la linea de locale, sin duplicarla.
+    sudo sed -i -E 's/^#[[:space:]]*(es_ES.UTF-8[[:space:]]+UTF-8)/\1/' /etc/locale.gen || return 1
+    if ! grep -Eq '^es_ES\.UTF-8[[:space:]]+UTF-8' /etc/locale.gen; then
+        echo 'es_ES.UTF-8 UTF-8' | sudo tee -a /etc/locale.gen >/dev/null || return 1
+    fi
+    sudo /usr/sbin/locale-gen es_ES.UTF-8 || return 1
+    sudo /usr/sbin/update-locale LANG=es_ES.UTF-8 LANGUAGE=es_ES:es || return 1
+    echo "Idioma configurado. Cierra sesion y vuelve a entrar para aplicar los cambios."
+}
+
+configurar_teclado() {
+    echo "Se configurara la distribucion de teclado espanol (es)."
+    echo "Es para un teclado espanol de Espana, no latinoamericano."
+    read -r -p "Continuar? (s/N): " confirmar
+    [[ "$confirmar" =~ ^[sS]$ ]] || return 0
+
+    if [ ! -f /etc/default/keyboard ]; then
+        echo "No existe /etc/default/keyboard. Instala keyboard-configuration."
+        return 1
+    fi
+    sudo cp /etc/default/keyboard /etc/default/keyboard.ziha.bak || return 1
+    sudo sed -i -E \
+        -e 's/^XKBLAYOUT=.*/XKBLAYOUT="es"/' \
+        -e 's/^XKBVARIANT=.*/XKBVARIANT=""/' \
+        -e 's/^XKBOPTIONS=.*/XKBOPTIONS=""/' \
+        /etc/default/keyboard || return 1
+
+    # En GNOME, la configuracion de entrada del usuario puede prevalecer sobre la del sistema.
+    if command -v gsettings >/dev/null 2>&1 && [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ] && \
+       gsettings list-schemas | grep -qx org.gnome.desktop.input-sources; then
+        gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'es')]" || \
+            echo "Aviso: cambia el teclado en Ajustes > Teclado si GNOME no lo aplica."
+    fi
+    echo "Teclado configurado. Reinicia o cierra sesion si todavia no cambia."
+    echo "Copia de seguridad: /etc/default/keyboard.ziha.bak"
+}
+
+if [ "$(id -u)" -eq 0 ]; then
+    echo "Ejecuta ziha_rueditas sin sudo; el programa pedira permisos cuando los necesite."
+    exit 1
+fi
+
+while true; do
+    mostrar_menu
+    read -r -p "Selecciona una opcion: " opcion || exit 0
+    case "$opcion" in
+        1) aplicar_fondo "$FONDOS/ziha_01_retrato.png" ;;
+        2) aplicar_fondo "$FONDOS/ziha_02_lluvia.png" ;;
+        3) aplicar_fondo "$FONDOS/ziha_03_azotea.png" ;;
+        4) configurar_idioma ;;
+        5) configurar_teclado ;;
+        0) echo "Hasta pronto :3"; exit 0 ;;
+        *) echo "Opcion no valida." ;;
+    esac
+    pausa
+done
