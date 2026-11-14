@@ -1,35 +1,95 @@
-# Ziha Rueditas 0.2.0
 
-Configurador sencillo en Bash para Debian y Ubuntu con GNOME.
+# Ziha Rueditas 0.3.0
 
-## Instalar
+Desarrollado por Ziha Studio <3
 
-```bash
-sudo apt install ./ziha-rueditas_0.2.0_all.deb
-ziha_rueditas
-```
+Ziha Rueditas es una herramienta escrita en Bash
+para facilitar la configuracion de Debian y Ubuntu.
 
-Opciones 1-3: elegir entre tres fondos de pantalla originales.
-Opcion 4: generar locale es_ES.UTF-8 y establecer idioma predeterminado.
-Opcion 5: establecer teclado espanol de Espana, guardando una copia del archivo anterior.
+El proyecto nace de la necesidad de preparar
+maquinas virtuales para estudiar ASIR.
 
-Ejecutar como usuario normal, nunca con sudo. Las opciones de sistema solicitan privilegios cuando se necesitan.
-Tras cambiar el idioma o teclado, cerrar sesion y volver a entrar.
+## Funcionalidades
 
-**Nota:** cambiar el locale no instala por si solo todos los paquetes de traduccion de cada aplicacion. En Ubuntu es posible que hagan falta paquetes language-pack-es.
+- Tres fondos de pantalla personalizados de Ziha.
+- Configuracion del sistema en espanol.
+- Configuracion del teclado espanol.
+- Informacion del sistema y arquitectura.
+- Deteccion de virtualizacion.
+- Cambio de resolucion de pantalla.
+- Escalado de pantalla al 100%, 125%, 150% y 200%.
+- Configuracion del tamano del texto.
+- Restauracion del escalado y texto.
+- Instalacion de herramientas esenciales.
+- Asistente de configuracion completa.
+- Menu personalizado con colores ANSI.
 
-## Editar con nano
+## Instalacion
 
-```bash
-nano usr/bin/ziha_rueditas
-nano DEBIAN/control
-```
+Descarga el instalador automatico:
 
-## Compilar
+    curl -fsSLO https://erickdmp.github.io/ziha_rueditas/install.sh
 
-Desde el directorio que contiene la carpeta `ziha_rueditas`:
+Revisa el script antes de ejecutarlo:
 
-```bash
-chmod 755 ziha_rueditas/usr/bin/ziha_rueditas
-dpkg-deb --build ziha_rueditas ziha-rueditas_0.2.0_all.deb
-```
+    cat install.sh
+
+Instala el programa:
+
+    sudo bash install.sh
+
+## Ejecutar Ziha Rueditas
+
+    ziha_rueditas
+
+Ejecutar como usuario normal, sin sudo.
+
+## Actualizaciones
+
+    sudo apt update
+    sudo apt install --only-upgrade ziha-rueditas
+
+## Compatibilidad
+
+- Debian 13 AMD64: probado.
+- Debian ARM64: pendiente de validacion.
+- Ubuntu: pendiente de validacion.
+- GNOME y Wayland.
+
+Las funciones de resolucion y escalado necesitan
+gdctl y actualmente admiten un unico monitor.
+
+No instala Guest Additions ni controladores
+especificos de VirtualBox.
+
+## Seguridad
+
+Repositorio APT firmado digitalmente mediante GPG.
+Verificacion automatica de la clave publica.
+
+## Historial de versiones
+
+### 0.3.0
+
+- Informacion del sistema.
+- Configuracion avanzada de pantalla.
+- Herramientas esenciales.
+- Asistente de configuracion completa.
+- Personalizacion visual del menu.
+
+### 0.2.0
+
+- Fondos personalizados.
+- Idioma y teclado espanol.
+- Repositorio APT firmado.
+- Instalador automatico.
+
+## Pagina oficial
+
+https://ziha.es/rueditas/
+
+## Contacto
+
+Ziha Studio
+contacto@ziha.es
+
