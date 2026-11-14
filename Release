@@ -1,15 +1,15 @@
-Date: Sat, 14 Nov 2026 01:53:00 +0000
+Date: Sat, 14 Nov 2026 20:35:33 +0000
 Label: Ziha Rueditas
 Origin: Ziha Studio
 MD5Sum:
- 3ff8bac9e01fe7a979d6919481f74471              728 Packages
- 95094741db07de8d61e3a374ffc5f47d              527 Packages.gz
+ 633ad13705213f4944bc1cb682164658             1758 Packages
+ ba2df2d7b5111627bfe7b71ec49eb14d              902 Packages.gz
 SHA1:
- cf71428fbe2c5754921c1ce44d99291b6068785f              728 Packages
- 07d5effd6808be43de1905c2b3bf2a04c51ef64e              527 Packages.gz
+ 5b7193662aebcf4394c6dc74b31eb2eb8f4584c9             1758 Packages
+ 74d4e2c0a8c92af9e9b57d022675e299153ecf31              902 Packages.gz
 SHA256:
- 5a96cf7a1d0b59277f491602d4c8597a387cf7e5b58b494d325362900364ba43              728 Packages
- 613f9bdb7e8b4e57b6ab8f41b14abe7a7986dfcb87ff3823dd1922c3a3d3c12c              527 Packages.gz
+ 520b05374df8bde523b3715beee8d5fd248a87475bad76b6b1acb365f05a3801             1758 Packages
+ 57427111c5b3ff076e0d8e4dcbf1b527d20e9bedaf2e420e05a25c0de6c740be              902 Packages.gz
 SHA512:
- b1cbac19b4561dfb77fd9220f07dda45929f818571e206eb8171c42346b0f611e11359c3bd965ce780793a620efb00ea74a1d8a6d4125d3f9aaebe13ebec8786              728 Packages
- 6399395e2f6002bb04d913f442b496746258a2591dfc637be82d273386b5df61eda99e6eecaf1968d17ba0db112394ffb5df374be7ca809871cea3bc86cef929              527 Packages.gz
+ 4dedfc1974d4e19ca0eb4086d6415a6d407967b713fb8db289ee588f800c81a43575f36c6a5e91671831c9654c46af161acd4c50afe21030436773849e773c4b             1758 Packages
+ f26c9a4ef6268056e96054db68d6c5d7fc8f2d50ba2e679df0d6a52a3a9c69901251bcd1b2c6ff5048d564b2f22923e4a049d246c48c9f41ff824746dab24659              902 Packages.gz

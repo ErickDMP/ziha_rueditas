@@ -1,169 +1,336 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ziha Rueditas | Ziha Studio</title>
-  <meta name="description" content="Ziha Rueditas es un configurador para Debian y Ubuntu con fondos de pantalla, idioma español, teclado español e instalador automático.">
-  <link rel="stylesheet" href="assets/css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ziha Rueditas | Ziha Studio</title>
+    <link rel="canonical" href="https://www.ziha.es/rueditas/">
+
+    <style>
+        :root {
+            --bg: #0b0b10;
+            --purple: #351456;
+            --blue: #09243e;
+            --accent: #8d5cff;
+            --text: #f5f7ff;
+            --muted: #bfc6da;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            color: var(--text);
+            background: linear-gradient(
+                135deg,
+                var(--blue),
+                var(--bg),
+                var(--purple),
+                var(--bg)
+            );
+            background-size: 300% 300%;
+            animation: fondo 15s ease infinite;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes fondo {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 40px;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .studio {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            align-items: center;
+            gap: 60px;
+            width: min(1100px, 100%);
+            margin: auto;
+            padding: 50px 30px;
+        }
+
+        .contenido {
+            animation: aparecer 1.2s ease both;
+        }
+
+        .etiqueta {
+            display: inline-block;
+            padding: 9px 16px;
+            border-radius: 30px;
+            background: rgba(141, 92, 255, 0.15);
+            color: #d6c8ff;
+            font-size: 0.85rem;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin: 24px 0;
+            line-height: 1.1;
+        }
+
+        p {
+            color: var(--muted);
+            line-height: 1.8;
+        }
+
+        .imagen {
+            animation: aparecer 1.5s ease both;
+        }
+
+        .imagen img {
+            display: block;
+            width: 100%;
+            max-width: 420px;
+            margin: auto;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+            animation: flotar 6s ease-in-out infinite;
+        }
+
+        @keyframes aparecer {
+            from {
+                opacity: 0;
+                transform: translateY(25px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes flotar {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .progreso {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 30px;
+        }
+
+        .barra {
+            height: 100%;
+            width: 0;
+            border-radius: 20px;
+            background: linear-gradient(
+                90deg, var(--purple), var(--accent)
+            );
+        }
+
+        .barra.activa {
+            animation: cargar 8s linear forwards;
+        }
+
+        @keyframes cargar {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        #estado {
+            font-size: 0.85rem;
+        }
+
+        .botones {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .boton, button {
+            display: inline-block;
+            padding: 14px 22px;
+            border-radius: 12px;
+            color: white;
+            font: inherit;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .boton {
+            background: linear-gradient(
+                135deg, var(--purple), var(--accent)
+            );
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #53465e;
+        }
+
+        .boton:hover, button:hover {
+            transform: translateY(-3px);
+        }
+
+        a:focus-visible, button:focus-visible {
+            outline: 2px solid white;
+            outline-offset: 5px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: #d6c8ff;
+        }
+
+        @media (max-width: 800px) {
+            main {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                text-align: center;
+            }
+
+            nav {
+                padding: 20px;
+            }
+
+            .imagen img {
+                max-width: 280px;
+            }
+
+            .botones {
+                justify-content: center;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+            }
+
+            .progreso {
+                display: none;
+            }
+        }
+    </style>
 </head>
+
 <body>
-  <header class="hero">
-    <nav class="navbar">
-      <div class="logo">Ziha Rueditas</div>
-      <div class="nav-links">
-        <a href="#instalacion">Instalación</a>
-        <a href="#caracteristicas">Características</a>
-        <a href="#seguridad">Seguridad</a>
-        <a href="#versiones">Versiones</a>
-      </div>
+
+    <nav>
+        <div class="logo">Ziha Rueditas</div>
+        <div class="studio">Ziha Studio &lt;3</div>
     </nav>
 
-    <div class="hero-content">
-      <div class="hero-text">
-        <p class="badge">Ziha Studio &lt;3</p>
-        <h1>Ziha Rueditas</h1>
-        <p class="subtitle">
-          Configurador para Debian y Ubuntu con instalación sencilla, fondos personalizados de Ziha
-          y herramientas para preparar máquinas virtuales de estudio.
+    <main>
+        <section class="contenido">
+
+            <span class="etiqueta">
+                Ziha Studio · Repositorio APT
+            </span>
+
+            <h1>Nuestro nuevo hogar.</h1>
+
+            <p>
+                Ziha Rueditas tiene su propia pagina oficial.
+                Descubre nuestras herramientas, novedades
+                y opciones de instalacion.
+            </p>
+
+            <div class="progreso" aria-hidden="true">
+                <div class="barra" id="barra"></div>
+            </div>
+
+            <p id="estado" role="status">
+                Visita nuestra pagina oficial.
+            </p>
+
+            <div class="botones">
+                <a class="boton"
+                   href="https://www.ziha.es/rueditas/">
+                    Ir a la pagina oficial
+                </a>
+
+                <button id="cancelar" type="button" hidden>
+                    Detener redireccion
+                </button>
+            </div>
+
+        </section>
+
+        <div class="imagen">
+            <img
+                src="https://www.ziha.es/rueditas/assets/img/ziha_01_retrato.png"
+                alt="Ilustracion original de Ziha">
+        </div>
+    </main>
+
+    <footer>
+        <p>Repositorio APT firmado digitalmente mediante GPG.</p>
+
+        <p>
+            Desarrollado por Ziha Studio &lt;3
+            ·
+            <a href="https://github.com/ErickDMP/ziha_rueditas">
+                GitHub
+            </a>
         </p>
+    </footer>
 
-        <div class="hero-buttons">
-          <a class="btn primary" href="#instalacion">Instalar ahora</a>
-          <a class="btn secondary" href="https://github.com/ErickDMP/ziha_rueditas" target="_blank">Ver en GitHub</a>
-        </div>
-      </div>
+    <script>
+        const destino = "https://www.ziha.es/rueditas/";
+        const estado = document.getElementById("estado");
+        const barra = document.getElementById("barra");
+        const cancelar = document.getElementById("cancelar");
 
-      <div class="hero-image">
-        <img src="assets/img/ziha_01_retrato.png" alt="Ziha retrato">
-      </div>
-    </div>
-  </header>
+        estado.textContent = "Redirigiendo en 8 segundos...";
+        barra.classList.add("activa");
+        cancelar.hidden = false;
 
-  <main>
-    <section id="instalacion" class="section">
-      <h2>Instalación rápida</h2>
-      <p>La forma más sencilla de instalar Ziha Rueditas en una máquina Debian o Ubuntu es usar el instalador automático.</p>
+        const temporizador = setTimeout(() => {
+            window.location.replace(destino);
+        }, 8000);
 
-      <div class="code-box">
-        <div class="code-header">
-          <span>Instalación automática</span>
-          <button class="copy-btn" data-copy="curl -fsSLO https://erickdmp.github.io/ziha_rueditas/install.sh && sudo bash install.sh">Copiar</button>
-        </div>
-        <pre><code>curl -fsSLO https://erickdmp.github.io/ziha_rueditas/install.sh && sudo bash install.sh</code></pre>
-      </div>
+        cancelar.addEventListener("click", () => {
+            clearTimeout(temporizador);
+            barra.style.animationPlayState = "paused";
+            estado.textContent = "Redireccion automatica detenida.";
+            cancelar.disabled = true;
+        });
+    </script>
 
-      <div class="code-box">
-        <div class="code-header">
-          <span>Ejecutar Ziha Rueditas</span>
-          <button class="copy-btn" data-copy="ziha_rueditas">Copiar</button>
-        </div>
-        <pre><code>ziha_rueditas</code></pre>
-      </div>
-    </section>
-
-    <section class="section alt">
-      <h2>Instalación manual</h2>
-      <p>Si prefieres configurar el repositorio APT manualmente, puedes seguir estos pasos:</p>
-
-      <div class="code-box">
-        <div class="code-header">
-          <span>Descargar clave</span>
-          <button class="copy-btn" data-copy="curl -fL https://erickdmp.github.io/ziha_rueditas/ziha-archive-key.asc -o /tmp/ziha-archive-key.asc">Copiar</button>
-        </div>
-        <pre><code>curl -fL https://erickdmp.github.io/ziha_rueditas/ziha-archive-key.asc -o /tmp/ziha-archive-key.asc</code></pre>
-      </div>
-
-      <div class="code-box">
-        <div class="code-header">
-          <span>Configurar repositorio</span>
-          <button class="copy-btn" data-copy="sudo install -d -m 755 /etc/apt/keyrings && sudo install -m 644 /tmp/ziha-archive-key.asc /etc/apt/keyrings/ziha-archive-key.asc">Copiar</button>
-        </div>
-        <pre><code>sudo install -d -m 755 /etc/apt/keyrings
-sudo install -m 644 /tmp/ziha-archive-key.asc /etc/apt/keyrings/ziha-archive-key.asc</code></pre>
-      </div>
-
-      <div class="code-box">
-        <div class="code-header">
-          <span>Contenido de ziha.sources</span>
-          <button class="copy-btn" data-copy="Types: deb
-URIs: https://erickdmp.github.io/ziha_rueditas/
-Suites: ./
-Signed-By: /etc/apt/keyrings/ziha-archive-key.asc">Copiar</button>
-        </div>
-        <pre><code>Types: deb
-URIs: https://erickdmp.github.io/ziha_rueditas/
-Suites: ./
-Signed-By: /etc/apt/keyrings/ziha-archive-key.asc</code></pre>
-      </div>
-    </section>
-
-    <section id="caracteristicas" class="section">
-      <h2>Características</h2>
-      <div class="features-grid">
-        <article class="card">
-          <h3>Fondos de Ziha</h3>
-          <p>Incluye tres fondos personalizados: retrato, lluvia y azotea.</p>
-        </article>
-        <article class="card">
-          <h3>Idioma español</h3>
-          <p>Configura el sistema en español de España.</p>
-        </article>
-        <article class="card">
-          <h3>Teclado español</h3>
-          <p>Permite establecer el teclado en distribución española.</p>
-        </article>
-        <article class="card">
-          <h3>Repositorio APT</h3>
-          <p>Distribución del paquete mediante GitHub Pages y repositorio firmado.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section alt">
-      <h2>Galería</h2>
-      <div class="gallery">
-        <img src="assets/img/ziha_01_retrato.png" alt="Ziha retrato">
-        <img src="assets/img/ziha_02_lluvia.png" alt="Ziha lluvia">
-        <img src="assets/img/ziha_03_azotea.png" alt="Ziha azotea">
-      </div>
-    </section>
-
-    <section id="seguridad" class="section">
-      <h2>Seguridad y firma GPG</h2>
-      <p>El repositorio APT de Ziha Studio está firmado digitalmente para que el sistema pueda verificar la autenticidad de las publicaciones.</p>
-
-      <div class="info-box">
-        <p><strong>Huella de la clave pública:</strong></p>
-        <p class="fingerprint">40F1 9713 45C3 C92A CAEF 9AE6 ACE2 D0DE 66CD CEAD</p>
-      </div>
-
-      <p>La clave pública del repositorio puede descargarse directamente desde esta misma web.</p>
-    </section>
-
-    <section id="versiones" class="section alt">
-      <h2>Versiones</h2>
-      <div class="versions">
-        <article class="card">
-          <h3>v0.2.0</h3>
-          <p>Fondos de Ziha, idioma español, teclado español, repositorio APT e instalador automático.</p>
-        </article>
-        <article class="card">
-          <h3>Próximo objetivo: v0.3.0</h3>
-          <p>Mejoras para VirtualBox, pantalla, carpetas compartidas y más automatización.</p>
-        </article>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <p>Desarrollado por <strong>Ziha Studio</strong> · Proyecto de aprendizaje y automatización para Debian y Ubuntu.</p>
-    <p>
-      <a href="https://github.com/ErickDMP/ziha_rueditas" target="_blank">GitHub</a> ·
-      <a href="https://ziha.es" target="_blank">Ziha.es</a>
-    </p>
-  </footer>
-
-  <script src="assets/js/script.js"></script>
 </body>
-</html><h1>Ziha Studio - Repositorio APT</h1> <p>Ziha Rueditas version 0.2</p>
+</html>
