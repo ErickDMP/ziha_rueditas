@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Ziha Rueditas 0.2.0 - fondos, idioma y teclado
+# Ziha Rueditas 0.3.0 - fondos, idioma y teclado
 # Ejecutar como usuario normal en la sesion grafica (sin sudo).
 
 FONDOS="/usr/share/backgrounds/ziha"
@@ -12,13 +12,15 @@ pausa() {
 mostrar_menu() {
     clear
     echo "=================================="
-    echo "      ZIHA RUEDITAS 0.2.0"
+    echo "      ZIHA RUEDITAS 0.3.0"
     echo "=================================="
     echo "  1) Ziha - Retrato"
     echo "  2) Ziha - Lluvia"
     echo "  3) Ziha - Azotea"
     echo "  4) Poner sistema en espanol (Espana)"
     echo "  5) Poner teclado espanol (Espana)"
+    echo "  6) Informacion del sistema"
+    echo "  7) Configurar pantalla"
     echo "  0) Salir"
     echo "=================================="
 }
@@ -39,6 +41,49 @@ aplicar_fondo() {
         gsettings set org.gnome.desktop.background picture-uri-dark "$uri" || return 1
     fi
     echo "Fondo aplicado: $(basename "$ruta")"
+}
+
+detectar_virtualizacion() {
+    echo "Detectando entorno de virtualizacion..."
+
+    tipo=$(systemd-detect-virt)
+
+    case "$tipo" in
+        oracle)
+            echo "VirtualBox detectado."
+            ;;
+        vmware)
+            echo "VMware detectado."
+            ;;
+        kvm)
+            echo "KVM detectado."
+            ;;
+        none)
+            echo "No se detecta virtualizacion."
+            ;;
+        *)
+            echo "Entorno detectado: $tipo"
+            ;;
+    esac
+}
+
+informacion_sistema() {
+    echo "=================================="
+    echo "     INFORMACION DEL SISTEMA"
+    echo "=================================="
+
+    source /etc/os-release
+
+    echo "Sistema: $PRETTY_NAME"
+    echo "Arquitectura CPU: $(uname -m)"
+    echo "Arquitectura APT: $(dpkg --print-architecture)"
+    echo "Kernel: $(uname -r)"
+    echo "Escritorio: ${XDG_CURRENT_DESKTOP:-No detectado}"
+    echo "Sesion: ${XDG_SESSION_TYPE:-No detectada}"
+
+    detectar_virtualizacion
+
+    echo "=================================="
 }
 
 configurar_idioma() {
@@ -88,6 +133,286 @@ configurar_teclado() {
     echo "Copia de seguridad: /etc/default/keyboard.ziha.bak"
 }
 
+
+cambiar_escalado() {
+    local escala="$1"
+    local datos monitor modo anterior confirmar
+
+    if ! command -v gdctl >/dev/null 2>&1; then
+        echo "gdctl no disponible en este sistema."
+        return 1
+    fi
+
+    # Detectar la configuracion actual
+    datos=$(LC_ALL=C gdctl show) || return 1
+
+    monitor=$(echo "$datos" | sed -nE 's/.*Monitor ([^ ]+).*/\1/p')
+    modo=$(echo "$datos" | grep -A 1 "Current mode" | grep -oE '[0-9]+x[0-9]+@[0-9.]+')
+    anterior=$(echo "$datos" | sed -n 's/.*Scale: //p')
+
+    # Comprobar que tenemos un solo monitor
+    if [[ -z "$monitor" || -z "$modo" || -z "$anterior" || "$monitor" == *$'\n'* ]]; then
+        echo "Configuracion de pantalla no compatible."
+        return 1
+    fi
+
+    if ! echo "$datos" | grep -q "Transform: normal"; then
+        echo "Esta configuracion requiere una pantalla sin rotar."
+        return 1
+    fi
+
+    echo "Monitor: $monitor"
+    echo "Resolucion: $modo"
+    echo "Escalado actual: $anterior"
+    echo "Nuevo escalado: $escala"
+
+    # Verificar compatibilidad
+    if ! gdctl set --verify --logical-monitor --primary --scale "$escala" --monitor "$monitor" --mode "$modo"; then
+        echo "El escalado seleccionado no es compatible."
+	echo "Prueba con otra resolucion de pantalla."
+	echo "No se ha modificado tu configuracion."
+        return 1
+    fi
+
+    # Aplicar escalado temporalmente
+    gdctl set --logical-monitor --primary --scale "$escala" --monitor "$monitor" --mode "$modo" || return 1
+
+    # Confirmar o recuperar el escalado anterior
+    if read -r -t 15 -p "Conservar el cambio? (s/N): " confirmar && [[ "$confirmar" =~ ^[sS]$ ]]; then
+        gdctl set --persistent --logical-monitor --primary --scale "$escala" --monitor "$monitor" --mode "$modo" || return 1
+	echo "Confirma tambien el cambio en GNOME si aparece una ventana."
+    else
+        echo
+        echo "Restaurando escalado anterior..."
+        gdctl set --logical-monitor --primary --scale "$anterior" --monitor "$monitor" --mode "$modo" || return 1
+		return 2
+    fi
+}
+
+
+cambiar_resolucion() {
+    local datos monitor actual escala nuevo opcion confirmar i
+    local -a modos
+
+    if ! command -v gdctl >/dev/null 2>&1; then
+        echo "gdctl no disponible."
+        return 1
+    fi
+
+    # Detectar la configuracion actual
+    datos=$(LC_ALL=C gdctl show) || return 1
+
+    monitor=$(echo "$datos" | sed -nE 's/.*Monitor ([^ ]+).*/\1/p')
+    actual=$(echo "$datos" | grep -A 1 "Current mode" | grep -oE '[0-9]+x[0-9]+@[0-9.]+')
+    escala=$(echo "$datos" | sed -n 's/.*Scale: //p')
+
+    # Comprobar que tenemos un solo monitor
+    if [[ -z "$monitor" || -z "$actual" || -z "$escala" || "$monitor" == *$'\n'* ]]; then
+        echo "Configuracion de pantalla no compatible."
+        return 1
+    fi
+
+    if ! echo "$datos" | grep -q "Transform: normal"; then
+        echo "La pantalla no debe estar rotada."
+        return 1
+    fi
+
+    # Obtener las resoluciones disponibles
+    datos=$(LC_ALL=C gdctl show --modes) || return 1
+
+    mapfile -t modos < <(echo "$datos" | grep -oE '[0-9]+x[0-9]+@[0-9.]+' | awk '!visto[$0]++')
+
+    if [ "${#modos[@]}" -eq 0 ]; then
+        echo "No se encontraron resoluciones."
+        return 1
+    fi
+
+    clear
+    echo "===================================="
+    echo "       ZIHA - RESOLUCION"
+    echo "          Ziha Studio <3"
+    echo "===================================="
+    echo "Monitor: $monitor"
+    echo "Resolucion actual: $actual"
+    echo "Escalado actual: $escala"
+    echo
+    echo "Resoluciones disponibles:"
+    echo
+
+    # Generar menu automaticamente
+    for i in "${!modos[@]}"; do
+        echo "  $((i+1))) ${modos[$i]}"
+    done
+
+    echo "  0) Cancelar"
+    echo
+
+    read -r -p "Selecciona una resolucion: " opcion || return
+
+    if [[ "$opcion" == "0" ]]; then
+        return 0
+    fi
+
+    if [[ ! "$opcion" =~ ^[1-9][0-9]{0,2}$ ]]; then
+        echo "Opcion no valida."
+        return 1
+    fi
+
+    if (( opcion > ${#modos[@]} )); then
+        echo "Opcion no valida."
+        return 1
+    fi
+
+    nuevo="${modos[$((opcion-1))]}"
+
+    # Verificar compatibilidad
+    if ! gdctl set --verify --logical-monitor --primary --scale "$escala" --monitor "$monitor" --mode "$nuevo"; then
+        echo "Resolucion incompatible con el escalado actual."
+        echo "Prueba primero con el escalado al 100%."
+        return 1
+    fi
+
+    # Aplicar resolucion temporalmente
+    gdctl set --logical-monitor --primary --scale "$escala" --monitor "$monitor" --mode "$nuevo" || return 1
+
+    # Confirmar o restaurar
+    if read -r -t 15 -p "Conservar el cambio? (s/N): " confirmar && [[ "$confirmar" =~ ^[sS]$ ]]; then
+        gdctl set --persistent --logical-monitor --primary --scale "$escala" --monitor "$monitor" --mode "$nuevo" || return 1
+	echo "Confirma tambien el cambio en GNOME si aparece una ventana."
+    else
+        echo
+        echo "Restaurando resolucion anterior..."
+        gdctl set --logical-monitor --primary --scale "$escala" --monitor "$monitor" --mode "$actual" || return 1
+    fi
+}
+
+
+cambiar_texto() {
+    local opcion tamano
+
+    if ! command -v gsettings >/dev/null 2>&1; then
+        echo "gsettings no disponible."
+        return 1
+    fi
+
+    if ! gsettings list-schemas | grep -qx org.gnome.desktop.interface; then
+        echo "Escritorio no compatible."
+        return 1
+    fi
+
+    clear
+    echo "===================================="
+    echo "      ZIHA - TAMANO DEL TEXTO"
+    echo "          Ziha Studio <3"
+    echo "===================================="
+    echo "  1) Texto pequeno    (85%)"
+    echo "  2) Texto normal     (100%)"
+    echo "  3) Texto mediano    (125%)"
+    echo "  4) Texto grande     (150%)"
+    echo "  5) Texto muy grande (200%)"
+    echo "  0) Volver"
+    echo "===================================="
+
+    read -r -p "Selecciona una opcion: " opcion || return
+
+    case "$opcion" in
+        1) tamano=0.85 ;;
+        2) tamano=1.0 ;;
+        3) tamano=1.25 ;;
+        4) tamano=1.5 ;;
+        5) tamano=2.0 ;;
+        0) return ;;
+        *) echo "Opcion no valida."; return 1 ;;
+    esac
+
+    gsettings set org.gnome.desktop.interface text-scaling-factor "$tamano" || return 1
+
+    echo "Tamano del texto aplicado correctamente."
+}
+
+
+restaurar_pantalla() {
+    local confirmar
+
+    echo "===================================="
+    echo "     RESTAURAR CONFIGURACION"
+    echo "===================================="
+    echo "Escalado de pantalla: 100%"
+    echo "Tamano del texto: predeterminado"
+    echo "Se mantendra la resolucion actual."
+    echo
+
+    if ! command -v gsettings >/dev/null 2>&1; then
+        echo "gsettings no disponible."
+        return 1
+    fi
+
+    if ! gsettings list-schemas | grep -qx org.gnome.desktop.interface; then
+        echo "Escritorio no compatible."
+        return 1
+    fi
+
+    read -r -p "Continuar? (s/N): " confirmar
+
+    if [[ ! "$confirmar" =~ ^[sS]$ ]]; then
+        echo "Operacion cancelada."
+        return 0
+    fi
+
+    cambiar_escalado 1.0 || return
+
+    gsettings reset org.gnome.desktop.interface text-scaling-factor || return 1
+
+    echo "Configuracion restaurada correctamente."
+}
+
+
+configurar_pantalla() {
+    local pantalla
+
+    while true; do
+        clear
+        echo "===================================="
+        echo "     ZIHA - CONFIGURAR PANTALLA"
+        echo "          Ziha Studio <3"
+        echo "===================================="
+        echo "  1) Informacion de pantalla"
+        echo "  2) Cambiar resolucion"
+        echo "  3) Escalado al 100%"
+        echo "  4) Escalado al 125%"
+        echo "  5) Escalado al 150%"
+        echo "  6) Escalado al 200%"
+        echo "  7) Cambiar tamano del texto"
+        echo "  8) Restaurar configuracion"
+        echo "  0) Volver al menu principal"
+        echo "===================================="
+
+        read -r -p "Selecciona una opcion: " pantalla || return
+
+        case "$pantalla" in
+            1)
+                if command -v gdctl >/dev/null 2>&1; then
+                    gdctl show
+                else
+                    echo "gdctl no disponible."
+                fi
+                ;;
+		3) cambiar_escalado 1.0 ;;
+		4) cambiar_escalado 1.25 ;;
+		5) cambiar_escalado 1.5 ;;
+		6) cambiar_escalado 2.0 ;;
+		2) cambiar_resolucion ;;
+		7) cambiar_texto ;;
+		8) restaurar_pantalla ;;
+            0) return ;;
+            *) echo "Opcion no valida." ;;
+        esac
+
+        pausa
+    done
+}
+
+
 if [ "$(id -u)" -eq 0 ]; then
     echo "Ejecuta ziha_rueditas sin sudo; el programa pedira permisos cuando los necesite."
     exit 1
@@ -102,6 +427,8 @@ while true; do
         3) aplicar_fondo "$FONDOS/ziha_03_azotea.png" ;;
         4) configurar_idioma ;;
         5) configurar_teclado ;;
+	6) informacion_sistema ;;
+	7) configurar_pantalla ;;
         0) echo "Hasta pronto :3"; exit 0 ;;
         *) echo "Opcion no valida." ;;
     esac
