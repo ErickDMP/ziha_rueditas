@@ -4,26 +4,39 @@
 
 FONDOS="/usr/share/backgrounds/ziha"
 
+# Colores de Ziha Studio
+MORADO='\033[1;35m'
+AZUL='\033[1;34m'
+VERDE='\033[1;32m'
+ROJO='\033[1;31m'
+AMARILLO='\033[1;33m'
+RESET='\033[0m'
+
 pausa() {
     echo
     read -r -p "Pulsa Enter para continuar..." _ || exit 0
 }
 
+
 mostrar_menu() {
     clear
-    echo "=================================="
-    echo "      ZIHA RUEDITAS 0.3.0"
-    echo "=================================="
-    echo "  1) Ziha - Retrato"
-    echo "  2) Ziha - Lluvia"
-    echo "  3) Ziha - Azotea"
-    echo "  4) Poner sistema en espanol (Espana)"
-    echo "  5) Poner teclado espanol (Espana)"
-    echo "  6) Informacion del sistema"
-    echo "  7) Configurar pantalla"
-    echo "  0) Salir"
-    echo "=================================="
+    echo -e "${MORADO}=======================================${RESET}"
+    echo -e "${MORADO}        ZIHA RUEDITAS 0.3.0${RESET}"
+    echo -e "${MORADO}           Ziha Studio <3${RESET}"
+    echo -e "${MORADO}=======================================${RESET}"
+    echo -e "${AZUL}  1)${RESET} Ziha - Retrato"
+    echo -e "${AZUL}  2)${RESET} Ziha - Lluvia"
+    echo -e "${AZUL}  3)${RESET} Ziha - Azotea"
+    echo -e "${AZUL}  4)${RESET} Poner sistema en espanol (Espana)"
+    echo -e "${AZUL}  5)${RESET} Poner teclado espanol (Espana)"
+    echo -e "${AZUL}  6)${RESET} Informacion del sistema"
+    echo -e "${AZUL}  7)${RESET} Configurar pantalla"
+    echo -e "${AZUL}  8)${RESET} Instalar herramientas esenciales"
+    echo -e "${AZUL}  9)${RESET} Configuracion completa"
+    echo -e "${ROJO}  0)${RESET} Salir"
+    echo -e "${MORADO}=======================================${RESET}"
 }
+
 
 aplicar_fondo() {
     local ruta="$1" uri
@@ -367,6 +380,39 @@ restaurar_pantalla() {
 }
 
 
+instalar_herramientas() {
+    local confirmar
+
+    clear
+    echo "===================================="
+    echo "    ZIHA - HERRAMIENTAS ESENCIALES"
+    echo "          Ziha Studio <3"
+    echo "===================================="
+
+    echo "Se instalaran las siguientes herramientas:"
+    echo
+    echo "Nano, Git, Curl, Wget"
+    echo "Zip, Unzip, Tree"
+    echo "DNSutils, Net-tools, IProute2"
+    echo "Ping, Traceroute y SSH"
+    echo
+
+    read -r -p "Continuar? (s/N): " confirmar || return
+
+    if [[ ! "$confirmar" =~ ^[sS]$ ]]; then
+        echo "Instalacion cancelada."
+        return 0
+    fi
+
+    sudo apt update || return 1
+
+    sudo apt install nano git curl wget zip unzip tree dnsutils net-tools iproute2 iputils-ping traceroute openssh-client || return 1
+
+    echo
+    echo "Herramientas instaladas correctamente."
+}
+
+
 configurar_pantalla() {
     local pantalla
 
@@ -413,6 +459,75 @@ configurar_pantalla() {
 }
 
 
+configuracion_completa() {
+    local confirmar fondo
+
+    clear
+    echo "===================================="
+    echo "    ZIHA - CONFIGURACION COMPLETA"
+    echo "          Ziha Studio <3"
+    echo "===================================="
+
+    echo "Vamos a preparar tu sistema:"
+    echo "1. Fondo de pantalla"
+    echo "2. Idioma del sistema"
+    echo "3. Teclado"
+    echo "4. Herramientas esenciales"
+    echo "5. Configuracion de pantalla"
+    echo
+
+    read -r -p "Continuar? (s/N): " confirmar || return
+
+    if [[ ! "$confirmar" =~ ^[sS]$ ]]; then
+        echo "Configuracion cancelada."
+        return 0
+    fi
+
+    echo
+    echo "Selecciona tu fondo de pantalla:"
+    echo "1) Ziha - Retrato"
+    echo "2) Ziha - Lluvia"
+    echo "3) Ziha - Azotea"
+    echo "0) Mantener fondo actual"
+
+    read -r -p "Selecciona: " fondo || return
+
+    case "$fondo" in
+        1) aplicar_fondo "$FONDOS/ziha_01_retrato.png" || echo "Error al aplicar fondo." ;;
+        2) aplicar_fondo "$FONDOS/ziha_02_lluvia.png" || echo "Error al aplicar fondo." ;;
+        3) aplicar_fondo "$FONDOS/ziha_03_azotea.png" || echo "Error al aplicar fondo." ;;
+        0) echo "Fondo conservado." ;;
+        *) echo "Opcion no valida. Fondo conservado." ;;
+    esac
+
+    echo
+    echo "Configuracion del idioma..."
+    configurar_idioma || echo "No se pudo configurar el idioma."
+    pausa
+
+    echo "Configuracion del teclado..."
+    configurar_teclado || echo "No se pudo configurar el teclado."
+    pausa
+
+    instalar_herramientas || echo "No se pudieron instalar las herramientas."
+    pausa
+
+    read -r -p "Configurar pantalla? (s/N): " confirmar || return
+
+    if [[ "$confirmar" =~ ^[sS]$ ]]; then
+        configurar_pantalla
+    fi
+
+    clear
+    echo "===================================="
+    echo "   ASISTENTE DE CONFIGURACION FINALIZADO"
+    echo "===================================="
+    echo "Revisa los resultados de cada apartado."
+    echo "Puedes reiniciar para aplicar los cambios."
+    echo "Gracias por confiar en Ziha <3"
+}
+
+
 if [ "$(id -u)" -eq 0 ]; then
     echo "Ejecuta ziha_rueditas sin sudo; el programa pedira permisos cuando los necesite."
     exit 1
@@ -429,6 +544,8 @@ while true; do
         5) configurar_teclado ;;
 	6) informacion_sistema ;;
 	7) configurar_pantalla ;;
+	8) instalar_herramientas ;;
+	9) configuracion_completa ;;
         0) echo "Hasta pronto :3"; exit 0 ;;
         *) echo "Opcion no valida." ;;
     esac
